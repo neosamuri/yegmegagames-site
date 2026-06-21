@@ -1,0 +1,353 @@
+---
+const eventsResponse = await fetch(`${Astro.url.origin}/api/events.json`);
+const events = await eventsResponse.json();
+
+type EventRow = {
+  title?: string;
+  date?: string;
+  time?: string;
+  location?: string;
+  description?: string;
+  rsvp_url?: string;
+  player_count?: string;
+  max_players?: string;
+  status?: string;
+  featured?: string;
+  visible?: string;
+};
+
+const isTrue = (value?: string) =>
+  String(value ?? '').trim().toLowerCase() === 'true' ||
+  String(value ?? '').trim().toLowerCase() === 'yes' ||
+  String(value ?? '').trim().toLowerCase() === '1';
+
+const isVisible = (event: EventRow) =>
+  String(event.visible ?? '').trim().toLowerCase() !== 'false' &&
+  String(event.visible ?? '').trim().toLowerCase() !== 'no' &&
+  String(event.visible ?? '').trim() !== '0';
+
+const visibleEvents = (events as EventRow[]).filter(isVisible);
+
+const sortedEvents = [...visibleEvents].sort((a, b) => {
+  const aDate = new Date(a.date ?? '').getTime();
+  const bDate = new Date(b.date ?? '').getTime();
+
+  if (Number.isNaN(aDate) && Number.isNaN(bDate)) return 0;
+  if (Number.isNaN(aDate)) return 1;
+  if (Number.isNaN(bDate)) return -1;
+
+  return aDate - bDate;
+});
+
+const nextEvent =
+  sortedEvents.find((event) => isTrue(event.featured)) ??
+  sortedEvents[0];
+
+const playerCount = Number(nextEvent?.player_count ?? 0);
+const maxPlayers = Number(nextEvent?.max_players ?? 0);
+const playerPercent =
+  maxPlayers > 0 ? Math.min(Math.round((playerCount / maxPlayers) * 100), 100) : 0;
+
+const hasRsvp = Boolean(nextEvent?.rsvp_url);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="YEG Megagames hosts large-scale tabletop megagame events in Edmonton, Alberta." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YEG Megagames | Edmonton Megagame Events</title>
+    <link rel="icon" type="image/png" href="/img/cropped-iconpng.png" />
+  </head>
+
+  <body class="bg-[#101010] text-stone-100">
+    <main class="min-h-screen overflow-hidden">
+      <header class="sticky top-0 z-50 border-b border-amber-500/20 bg-[#101010]/95 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
+          <a href="/" class="flex items-center gap-3">
+            <img src="/img/cropped-iconpng.png" alt="" class="h-11 w-11 rounded-sm" />
+            <span class="font-serif text-xl font-black tracking-wide text-amber-400 sm:text-2xl">
+              YEG Megagames
+            </span>
+          </a>
+
+          <nav class="hidden items-center gap-8 text-sm font-semibold uppercase tracking-widest text-stone-300 md:flex">
+            <a href="#next-event" class="transition hover:text-amber-400">Next Event</a>
+            <a href="#events" class="transition hover:text-amber-400">Events</a>
+            <a href="#about" class="transition hover:text-amber-400">About</a>
+            <a href="#community" class="transition hover:text-amber-400">Community</a>
+          </nav>
+        </div>
+      </header>
+
+      <section class="relative border-b border-amber-500/20">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,160,23,0.20),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(139,30,30,0.30),transparent_35%)]"></div>
+
+        <div class="relative mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
+          <section>
+            <img src="/img/logopng.png" alt="YEG Megagames" class="mb-10 w-72 max-w-full sm:w-96" />
+
+            <p class="mb-5 text-sm font-black uppercase tracking-[0.35em] text-amber-400">
+              Edmonton's Megagame Community
+            </p>
+
+            <h1 class="max-w-4xl font-serif text-5xl font-black leading-[0.95] text-white sm:text-6xl lg:text-7xl">
+              Big games. Bigger stories.
+            </h1>
+
+            <p class="mt-7 max-w-2xl text-lg leading-8 text-stone-300 sm:text-xl">
+              Join large-scale tabletop strategy events filled with diplomacy, negotiation,
+              teamwork, chaos, alliances, betrayals, and unforgettable decisions.
+            </p>
+
+            <div class="mt-9 flex flex-wrap gap-4">
+              <a
+                href="#next-event"
+                class="rounded-md bg-amber-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-[#101010] shadow-lg shadow-amber-950/40 transition hover:bg-amber-400"
+              >
+                View Next Event
+              </a>
+
+              <a
+                href="#community"
+                class="rounded-md border border-amber-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/10 hover:text-amber-200"
+              >
+                Join The Community
+              </a>
+            </div>
+          </section>
+
+          {nextEvent ? (
+            <section
+              id="next-event"
+              class="rounded-2xl border border-amber-500/30 bg-[#1b1b1b]/95 p-6 shadow-2xl shadow-black/50 sm:p-8"
+            >
+              <div class="mb-6 flex items-center justify-between gap-4">
+                <p class="text-sm font-black uppercase tracking-[0.25em] text-amber-400">
+                  Next Megagame
+                </p>
+
+                {nextEvent.status && (
+                  <span class="rounded-full border border-red-700/60 bg-red-950/50 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-200">
+                    {nextEvent.status}
+                  </span>
+                )}
+              </div>
+
+              <h2 class="font-serif text-4xl font-black leading-tight text-white">
+                {nextEvent.title}
+              </h2>
+
+              <div class="mt-5 grid gap-3 text-stone-300">
+                {nextEvent.date && (
+                  <p>
+                    <span class="font-bold text-amber-400">Date:</span> {nextEvent.date}
+                  </p>
+                )}
+
+                {nextEvent.time && (
+                  <p>
+                    <span class="font-bold text-amber-400">Time:</span> {nextEvent.time}
+                  </p>
+                )}
+
+                {nextEvent.location && (
+                  <p>
+                    <span class="font-bold text-amber-400">Location:</span> {nextEvent.location}
+                  </p>
+                )}
+              </div>
+
+              {nextEvent.description && (
+                <p class="mt-6 leading-7 text-stone-300">
+                  {nextEvent.description}
+                </p>
+              )}
+
+              <div class="mt-8">
+                <div class="mb-2 flex justify-between text-sm font-bold text-stone-300">
+                  <span>Current Player Count</span>
+                  <span>{playerCount} / {maxPlayers}</span>
+                </div>
+
+                <div class="h-4 overflow-hidden rounded-full bg-stone-800 ring-1 ring-amber-500/20">
+                  <div
+                    class="h-full rounded-full bg-amber-500 transition-all"
+                    style={`width: ${playerPercent}%`}
+                  ></div>
+                </div>
+              </div>
+
+              {hasRsvp ? (
+                <a
+                  href={nextEvent.rsvp_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mt-8 block rounded-md bg-red-800 px-6 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition hover:bg-red-700"
+                >
+                  RSVP / Reserve Your Seat
+                </a>
+              ) : (
+                <p class="mt-8 rounded-md border border-stone-700 bg-stone-950 px-6 py-4 text-center font-bold text-stone-300">
+                  RSVP link coming soon.
+                </p>
+              )}
+            </section>
+          ) : (
+            <section class="rounded-2xl border border-amber-500/30 bg-[#1b1b1b]/95 p-8">
+              <p class="text-lg text-stone-300">No upcoming events are currently listed.</p>
+            </section>
+          )}
+        </div>
+      </section>
+
+      <section id="events" class="bg-[#161616] px-5 py-16 sm:px-8 lg:py-20">
+        <div class="mx-auto max-w-7xl">
+          <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="mb-3 text-sm font-black uppercase tracking-[0.3em] text-amber-400">
+                From The Sheet
+              </p>
+              <h2 class="font-serif text-4xl font-black text-white sm:text-5xl">
+                Upcoming Events
+              </h2>
+            </div>
+
+            <p class="max-w-xl text-stone-400">
+              These events are loaded live from the YEG Megagames Google Sheet.
+            </p>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {sortedEvents.map((event) => {
+              const count = Number(event.player_count ?? 0);
+              const max = Number(event.max_players ?? 0);
+              const percent = max > 0 ? Math.min(Math.round((count / max) * 100), 100) : 0;
+
+              return (
+                <article class="rounded-xl border border-stone-700 bg-[#101010] p-6 shadow-lg shadow-black/30">
+                  <div class="mb-5 flex items-center justify-between gap-4">
+                    {event.status && (
+                      <span class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-300">
+                        {event.status}
+                      </span>
+                    )}
+
+                    {isTrue(event.featured) && (
+                      <span class="rounded-full bg-red-800/40 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-100">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 class="font-serif text-2xl font-black text-white">
+                    {event.title}
+                  </h3>
+
+                  <div class="mt-4 space-y-2 text-sm text-stone-300">
+                    {event.date && <p>{event.date}</p>}
+                    {event.time && <p>{event.time}</p>}
+                    {event.location && <p class="text-stone-400">{event.location}</p>}
+                  </div>
+
+                  {event.description && (
+                    <p class="mt-5 line-clamp-4 leading-7 text-stone-400">
+                      {event.description}
+                    </p>
+                  )}
+
+                  <div class="mt-6">
+                    <div class="mb-2 flex justify-between text-xs font-bold uppercase tracking-wider text-stone-400">
+                      <span>Players</span>
+                      <span>{count} / {max}</span>
+                    </div>
+
+                    <div class="h-2.5 overflow-hidden rounded-full bg-stone-800">
+                      <div class="h-full rounded-full bg-amber-500" style={`width: ${percent}%`}></div>
+                    </div>
+                  </div>
+
+                  {event.rsvp_url ? (
+                    <a
+                      href={event.rsvp_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-6 inline-flex font-black uppercase tracking-wider text-amber-400 transition hover:text-amber-300"
+                    >
+                      RSVP →
+                    </a>
+                  ) : (
+                    <p class="mt-6 font-bold text-stone-500">RSVP coming soon</p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="border-y border-amber-500/20 bg-[#101010] px-5 py-16 sm:px-8 lg:py-20">
+        <div class="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p class="mb-3 text-sm font-black uppercase tracking-[0.3em] text-amber-400">
+              What Is A Megagame?
+            </p>
+
+            <h2 class="font-serif text-4xl font-black text-white sm:text-5xl">
+              Part board game, part roleplaying, part beautiful chaos.
+            </h2>
+          </div>
+
+          <div class="space-y-5 text-lg leading-8 text-stone-300">
+            <p>
+              Megagames are large-scale social strategy games where dozens of players
+              take on roles, negotiate with other teams, respond to crises, and shape
+              a shared story over a single event day.
+            </p>
+
+            <p>
+              New players are welcome. You do not need to be an expert gamer to join.
+              Come ready to talk, scheme, collaborate, panic, and have a memorable day.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="community" class="bg-[#161616] px-5 py-16 sm:px-8 lg:py-20">
+        <div class="mx-auto max-w-7xl rounded-2xl border border-amber-500/30 bg-[#1b1b1b] p-8 text-center shadow-2xl shadow-black/40 sm:p-12">
+          <img src="/img/cropped-iconpng.png" alt="" class="mx-auto mb-6 h-16 w-16" />
+
+          <h2 class="font-serif text-4xl font-black text-white sm:text-5xl">
+            Join the YEG Megagames community
+          </h2>
+
+          <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-300">
+            Follow upcoming events, meet other players, and get announcements for the
+            next Edmonton megagame.
+          </p>
+
+          <div class="mt-8 flex flex-wrap justify-center gap-4">
+            <a
+              href="#"
+              class="rounded-md bg-amber-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-[#101010] transition hover:bg-amber-400"
+            >
+              Discord Link Coming Soon
+            </a>
+
+            <a
+              href="#"
+              class="rounded-md border border-amber-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/10"
+            >
+              Facebook Link Coming Soon
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <footer class="border-t border-amber-500/20 bg-[#101010] px-5 py-8 text-center text-sm text-stone-500 sm:px-8">
+        <p>YEG Megagames · Edmonton, Alberta</p>
+      </footer>
+    </main>
+  </body>
+</html>

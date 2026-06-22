@@ -1,54 +1,5 @@
 ---
-const eventsResponse = await fetch(`${Astro.url.origin}/api/events.json`);
-const events = await eventsResponse.json();
-
-type EventRow = {
-  title?: string;
-  date?: string;
-  time?: string;
-  location?: string;
-  description?: string;
-  rsvp_url?: string;
-  player_count?: string;
-  max_players?: string;
-  status?: string;
-  featured?: string;
-  visible?: string;
-};
-
-const isTrue = (value?: string) =>
-  String(value ?? '').trim().toLowerCase() === 'true' ||
-  String(value ?? '').trim().toLowerCase() === 'yes' ||
-  String(value ?? '').trim().toLowerCase() === '1';
-
-const isVisible = (event: EventRow) =>
-  String(event.visible ?? '').trim().toLowerCase() !== 'false' &&
-  String(event.visible ?? '').trim().toLowerCase() !== 'no' &&
-  String(event.visible ?? '').trim() !== '0';
-
-const visibleEvents = (events as EventRow[]).filter(isVisible);
-
-const sortedEvents = [...visibleEvents].sort((a, b) => {
-  const aDate = new Date(a.date ?? '').getTime();
-  const bDate = new Date(b.date ?? '').getTime();
-
-  if (Number.isNaN(aDate) && Number.isNaN(bDate)) return 0;
-  if (Number.isNaN(aDate)) return 1;
-  if (Number.isNaN(bDate)) return -1;
-
-  return aDate - bDate;
-});
-
-const nextEvent =
-  sortedEvents.find((event) => isTrue(event.featured)) ??
-  sortedEvents[0];
-
-const playerCount = Number(nextEvent?.player_count ?? 0);
-const maxPlayers = Number(nextEvent?.max_players ?? 0);
-const playerPercent =
-  maxPlayers > 0 ? Math.min(Math.round((playerCount / maxPlayers) * 100), 100) : 0;
-
-const hasRsvp = Boolean(nextEvent?.rsvp_url);
+import '../styles/global.css';
 ---
 
 <!doctype html>
@@ -61,293 +12,292 @@ const hasRsvp = Boolean(nextEvent?.rsvp_url);
     <link rel="icon" type="image/png" href="/img/cropped-iconpng.png" />
   </head>
 
-  <body class="bg-[#101010] text-stone-100">
-    <main class="min-h-screen overflow-hidden">
-      <header class="sticky top-0 z-50 border-b border-amber-500/20 bg-[#101010]/95 backdrop-blur">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
-          <a href="/" class="flex items-center gap-3">
-            <img src="/img/cropped-iconpng.png" alt="" class="h-11 w-11 rounded-sm" />
-            <span class="font-serif text-xl font-black tracking-wide text-amber-400 sm:text-2xl">
-              YEG Megagames
-            </span>
+  <body class="bg-zinc-950 text-zinc-100">
+    <main class="min-h-screen">
+      <header class="sticky top-0 z-50 border-b border-yellow-500/20 bg-zinc-950/90 backdrop-blur">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+          <a href="/" class="flex items-center gap-3 no-underline">
+            <img src="/img/cropped-iconpng.png" alt="" class="h-10 w-10" />
+            <span class="text-xl font-black tracking-wide text-yellow-400">YEG Megagames</span>
           </a>
 
-          <nav class="hidden items-center gap-8 text-sm font-semibold uppercase tracking-widest text-stone-300 md:flex">
-            <a href="#next-event" class="transition hover:text-amber-400">Next Event</a>
-            <a href="#events" class="transition hover:text-amber-400">Events</a>
-            <a href="#about" class="transition hover:text-amber-400">About</a>
-            <a href="#community" class="transition hover:text-amber-400">Community</a>
+          <nav class="hidden gap-6 text-sm font-bold uppercase tracking-widest text-zinc-300 md:flex">
+            <a class="no-underline hover:text-yellow-400" href="#next-event">Next Event</a>
+            <a class="no-underline hover:text-yellow-400" href="#events">Events</a>
+            <a class="no-underline hover:text-yellow-400" href="#about">About</a>
+            <a class="no-underline hover:text-yellow-400" href="#community">Community</a>
           </nav>
         </div>
       </header>
 
-      <section class="relative border-b border-amber-500/20">
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(212,160,23,0.20),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(139,30,30,0.30),transparent_35%)]"></div>
+      <section class="relative overflow-hidden border-b border-yellow-500/20">
+        <div class="absolute inset-0 bg-[linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.88)),url('/img/66849364_10161901310555386_1504923014003687424_o.jpg')] bg-cover bg-center"></div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(234,179,8,.24),transparent_35%),radial-gradient(circle_at_bottom_right,rgba(127,29,29,.42),transparent_35%)]"></div>
 
-        <div class="relative mx-auto grid max-w-7xl gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:py-24">
+        <div class="relative mx-auto grid max-w-7xl gap-10 px-5 py-16 lg:grid-cols-[1fr_0.95fr] lg:items-center lg:py-24">
           <section>
-            <img src="/img/logopng.png" alt="YEG Megagames" class="mb-10 w-72 max-w-full sm:w-96" />
+            <img src="/img/logopng.png" alt="YEG Megagames" class="mb-8 w-72 max-w-full drop-shadow-2xl sm:w-96" />
 
-            <p class="mb-5 text-sm font-black uppercase tracking-[0.35em] text-amber-400">
+            <p class="mb-4 text-sm font-black uppercase tracking-[0.35em] text-yellow-400">
               Edmonton's Megagame Community
             </p>
 
-            <h1 class="max-w-4xl font-serif text-5xl font-black leading-[0.95] text-white sm:text-6xl lg:text-7xl">
+            <h1 class="max-w-3xl text-5xl font-black leading-none text-white sm:text-6xl lg:text-7xl">
               Big games. Bigger stories.
             </h1>
 
-            <p class="mt-7 max-w-2xl text-lg leading-8 text-stone-300 sm:text-xl">
+            <p class="mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
               Join large-scale tabletop strategy events filled with diplomacy, negotiation,
               teamwork, chaos, alliances, betrayals, and unforgettable decisions.
             </p>
 
-            <div class="mt-9 flex flex-wrap gap-4">
-              <a
-                href="#next-event"
-                class="rounded-md bg-amber-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-[#101010] shadow-lg shadow-amber-950/40 transition hover:bg-amber-400"
-              >
+            <div class="mt-8 flex flex-wrap gap-4">
+              <a href="#next-event" class="rounded-md bg-yellow-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 no-underline shadow-lg hover:bg-yellow-400">
                 View Next Event
               </a>
-
-              <a
-                href="#community"
-                class="rounded-md border border-amber-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/10 hover:text-amber-200"
-              >
+              <a href="#community" class="rounded-md border border-yellow-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-yellow-300 no-underline hover:bg-yellow-500/10">
                 Join The Community
               </a>
             </div>
           </section>
 
-          {nextEvent ? (
-            <section
-              id="next-event"
-              class="rounded-2xl border border-amber-500/30 bg-[#1b1b1b]/95 p-6 shadow-2xl shadow-black/50 sm:p-8"
-            >
-              <div class="mb-6 flex items-center justify-between gap-4">
-                <p class="text-sm font-black uppercase tracking-[0.25em] text-amber-400">
-                  Next Megagame
-                </p>
-
-                {nextEvent.status && (
-                  <span class="rounded-full border border-red-700/60 bg-red-950/50 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-200">
-                    {nextEvent.status}
-                  </span>
-                )}
-              </div>
-
-              <h2 class="font-serif text-4xl font-black leading-tight text-white">
-                {nextEvent.title}
-              </h2>
-
-              <div class="mt-5 grid gap-3 text-stone-300">
-                {nextEvent.date && (
-                  <p>
-                    <span class="font-bold text-amber-400">Date:</span> {nextEvent.date}
-                  </p>
-                )}
-
-                {nextEvent.time && (
-                  <p>
-                    <span class="font-bold text-amber-400">Time:</span> {nextEvent.time}
-                  </p>
-                )}
-
-                {nextEvent.location && (
-                  <p>
-                    <span class="font-bold text-amber-400">Location:</span> {nextEvent.location}
-                  </p>
-                )}
-              </div>
-
-              {nextEvent.description && (
-                <p class="mt-6 leading-7 text-stone-300">
-                  {nextEvent.description}
-                </p>
-              )}
-
-              <div class="mt-8">
-                <div class="mb-2 flex justify-between text-sm font-bold text-stone-300">
-                  <span>Current Player Count</span>
-                  <span>{playerCount} / {maxPlayers}</span>
-                </div>
-
-                <div class="h-4 overflow-hidden rounded-full bg-stone-800 ring-1 ring-amber-500/20">
-                  <div
-                    class="h-full rounded-full bg-amber-500 transition-all"
-                    style={`width: ${playerPercent}%`}
-                  ></div>
-                </div>
-              </div>
-
-              {hasRsvp ? (
-                <a
-                  href={nextEvent.rsvp_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="mt-8 block rounded-md bg-red-800 px-6 py-4 text-center text-sm font-black uppercase tracking-wider text-white transition hover:bg-red-700"
-                >
-                  RSVP / Reserve Your Seat
-                </a>
-              ) : (
-                <p class="mt-8 rounded-md border border-stone-700 bg-stone-950 px-6 py-4 text-center font-bold text-stone-300">
-                  RSVP link coming soon.
-                </p>
-              )}
-            </section>
-          ) : (
-            <section class="rounded-2xl border border-amber-500/30 bg-[#1b1b1b]/95 p-8">
-              <p class="text-lg text-stone-300">No upcoming events are currently listed.</p>
-            </section>
-          )}
-        </div>
-      </section>
-
-      <section id="events" class="bg-[#161616] px-5 py-16 sm:px-8 lg:py-20">
-        <div class="mx-auto max-w-7xl">
-          <div class="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p class="mb-3 text-sm font-black uppercase tracking-[0.3em] text-amber-400">
-                From The Sheet
-              </p>
-              <h2 class="font-serif text-4xl font-black text-white sm:text-5xl">
-                Upcoming Events
-              </h2>
+          <section id="next-event" class="rounded-2xl border border-yellow-500/30 bg-zinc-900/95 p-6 shadow-2xl shadow-black/60 backdrop-blur">
+            <div id="featured-event">
+              <p class="text-zinc-300">Loading next megagame...</p>
             </div>
+          </section>
+        </div>
+      </section>
 
-            <p class="max-w-xl text-stone-400">
-              These events are loaded live from the YEG Megagames Google Sheet.
-            </p>
+      <section id="events" class="bg-zinc-900 px-5 py-16 lg:py-20">
+        <div class="mx-auto max-w-7xl">
+          <div class="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p class="mb-3 text-sm font-black uppercase tracking-[0.3em] text-yellow-400">Upcoming</p>
+              <h2 class="text-4xl font-black text-white sm:text-5xl">Events</h2>
+            </div>
+            <p class="max-w-xl text-zinc-400">Loaded live from the YEG Megagames Google Sheet.</p>
           </div>
 
-          <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {sortedEvents.map((event) => {
-              const count = Number(event.player_count ?? 0);
-              const max = Number(event.max_players ?? 0);
-              const percent = max > 0 ? Math.min(Math.round((count / max) * 100), 100) : 0;
-
-              return (
-                <article class="rounded-xl border border-stone-700 bg-[#101010] p-6 shadow-lg shadow-black/30">
-                  <div class="mb-5 flex items-center justify-between gap-4">
-                    {event.status && (
-                      <span class="rounded-full bg-amber-500/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-amber-300">
-                        {event.status}
-                      </span>
-                    )}
-
-                    {isTrue(event.featured) && (
-                      <span class="rounded-full bg-red-800/40 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-100">
-                        Featured
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 class="font-serif text-2xl font-black text-white">
-                    {event.title}
-                  </h3>
-
-                  <div class="mt-4 space-y-2 text-sm text-stone-300">
-                    {event.date && <p>{event.date}</p>}
-                    {event.time && <p>{event.time}</p>}
-                    {event.location && <p class="text-stone-400">{event.location}</p>}
-                  </div>
-
-                  {event.description && (
-                    <p class="mt-5 line-clamp-4 leading-7 text-stone-400">
-                      {event.description}
-                    </p>
-                  )}
-
-                  <div class="mt-6">
-                    <div class="mb-2 flex justify-between text-xs font-bold uppercase tracking-wider text-stone-400">
-                      <span>Players</span>
-                      <span>{count} / {max}</span>
-                    </div>
-
-                    <div class="h-2.5 overflow-hidden rounded-full bg-stone-800">
-                      <div class="h-full rounded-full bg-amber-500" style={`width: ${percent}%`}></div>
-                    </div>
-                  </div>
-
-                  {event.rsvp_url ? (
-                    <a
-                      href={event.rsvp_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="mt-6 inline-flex font-black uppercase tracking-wider text-amber-400 transition hover:text-amber-300"
-                    >
-                      RSVP →
-                    </a>
-                  ) : (
-                    <p class="mt-6 font-bold text-stone-500">RSVP coming soon</p>
-                  )}
-                </article>
-              );
-            })}
+          <div id="events-grid" class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <p class="text-zinc-300">Loading events...</p>
           </div>
         </div>
       </section>
 
-      <section id="about" class="border-y border-amber-500/20 bg-[#101010] px-5 py-16 sm:px-8 lg:py-20">
+      <section id="about" class="border-y border-yellow-500/20 bg-zinc-950 px-5 py-16 lg:py-20">
         <div class="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
-            <p class="mb-3 text-sm font-black uppercase tracking-[0.3em] text-amber-400">
-              What Is A Megagame?
-            </p>
-
-            <h2 class="font-serif text-4xl font-black text-white sm:text-5xl">
+            <p class="mb-3 text-sm font-black uppercase tracking-[0.3em] text-yellow-400">What Is A Megagame?</p>
+            <h2 class="text-4xl font-black text-white sm:text-5xl">
               Part board game, part roleplaying, part beautiful chaos.
             </h2>
           </div>
 
-          <div class="space-y-5 text-lg leading-8 text-stone-300">
+          <div class="space-y-5 text-lg leading-8 text-zinc-300">
             <p>
-              Megagames are large-scale social strategy games where dozens of players
-              take on roles, negotiate with other teams, respond to crises, and shape
-              a shared story over a single event day.
+              Megagames are large-scale social strategy games where dozens of players take on roles,
+              negotiate with other teams, respond to crises, and shape a shared story over a single event day.
             </p>
-
             <p>
-              New players are welcome. You do not need to be an expert gamer to join.
-              Come ready to talk, scheme, collaborate, panic, and have a memorable day.
+              New players are welcome. Come ready to talk, scheme, collaborate, panic, and have a memorable day.
             </p>
           </div>
         </div>
       </section>
 
-      <section id="community" class="bg-[#161616] px-5 py-16 sm:px-8 lg:py-20">
-        <div class="mx-auto max-w-7xl rounded-2xl border border-amber-500/30 bg-[#1b1b1b] p-8 text-center shadow-2xl shadow-black/40 sm:p-12">
+      <section id="community" class="bg-zinc-900 px-5 py-16 lg:py-20">
+        <div class="mx-auto max-w-7xl rounded-2xl border border-yellow-500/30 bg-zinc-950 p-8 text-center shadow-2xl shadow-black/50">
           <img src="/img/cropped-iconpng.png" alt="" class="mx-auto mb-6 h-16 w-16" />
-
-          <h2 class="font-serif text-4xl font-black text-white sm:text-5xl">
-            Join the YEG Megagames community
-          </h2>
-
-          <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-stone-300">
-            Follow upcoming events, meet other players, and get announcements for the
-            next Edmonton megagame.
+          <h2 class="text-4xl font-black text-white sm:text-5xl">Join the YEG Megagames community</h2>
+          <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-zinc-300">
+            Follow upcoming events, meet other players, and get announcements for the next Edmonton megagame.
           </p>
 
           <div class="mt-8 flex flex-wrap justify-center gap-4">
-            <a
-              href="#"
-              class="rounded-md bg-amber-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-[#101010] transition hover:bg-amber-400"
-            >
+            <a href="#" class="rounded-md bg-yellow-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 no-underline hover:bg-yellow-400">
               Discord Link Coming Soon
             </a>
-
-            <a
-              href="#"
-              class="rounded-md border border-amber-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-amber-300 transition hover:bg-amber-500/10"
-            >
+            <a href="#" class="rounded-md border border-yellow-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-yellow-300 no-underline hover:bg-yellow-500/10">
               Facebook Link Coming Soon
             </a>
           </div>
         </div>
       </section>
 
-      <footer class="border-t border-amber-500/20 bg-[#101010] px-5 py-8 text-center text-sm text-stone-500 sm:px-8">
+      <footer class="border-t border-yellow-500/20 bg-zinc-950 px-5 py-8 text-center text-sm text-zinc-500">
         <p>YEG Megagames · Edmonton, Alberta</p>
       </footer>
     </main>
+
+    <script>
+      const featuredEvent = document.querySelector('#featured-event');
+      const eventsGrid = document.querySelector('#events-grid');
+
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      function isTrue(value) {
+        const cleaned = String(value ?? '').trim().toLowerCase();
+        return cleaned === 'true' || cleaned === 'yes' || cleaned === '1';
+      }
+
+      function isVisible(event) {
+        const cleaned = String(event.visible ?? '').trim().toLowerCase();
+        return cleaned !== 'false' && cleaned !== 'no' && cleaned !== '0';
+      }
+
+      function getPlayerPercent(event) {
+        const count = Number(event.player_count ?? 0);
+        const max = Number(event.max_players ?? 0);
+        return max > 0 ? Math.min(Math.round((count / max) * 100), 100) : 0;
+      }
+
+      function getEventImage(event) {
+        const image = String(event.image ?? '').trim();
+        return image || '/img/67084676_10161901306805386_5924142824818737152_n-1.jpg';
+      }
+
+      function sortEvents(events) {
+        return [...events].sort((a, b) => {
+          const aDate = new Date(a.date ?? '').getTime();
+          const bDate = new Date(b.date ?? '').getTime();
+          if (Number.isNaN(aDate) && Number.isNaN(bDate)) return 0;
+          if (Number.isNaN(aDate)) return 1;
+          if (Number.isNaN(bDate)) return -1;
+          return aDate - bDate;
+        });
+      }
+
+      function renderFeaturedEvent(event) {
+        if (!featuredEvent) return;
+
+        if (!event) {
+          featuredEvent.innerHTML = '<p class="text-zinc-300">No upcoming events are currently listed.</p>';
+          return;
+        }
+
+        const playerPercent = getPlayerPercent(event);
+        const playerCount = Number(event.player_count ?? 0);
+        const maxPlayers = Number(event.max_players ?? 0);
+        const rsvpUrl = String(event.rsvp_url ?? '').trim();
+
+        featuredEvent.innerHTML = `
+          <div class="mb-6 flex items-center justify-between gap-4">
+            <p class="text-sm font-black uppercase tracking-[0.25em] text-yellow-400">Next Megagame</p>
+            ${event.status ? `<span class="rounded-full border border-red-700/60 bg-red-950/50 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-200">${escapeHtml(event.status)}</span>` : ''}
+          </div>
+
+          <div class="mb-6 overflow-hidden rounded-xl border border-zinc-700">
+            <img src="${escapeHtml(getEventImage(event))}" alt="" class="h-56 w-full object-cover" />
+          </div>
+
+          <h2 class="text-4xl font-black leading-tight text-white">${escapeHtml(event.title)}</h2>
+
+          <div class="mt-5 grid gap-3 text-zinc-300">
+            ${event.date ? `<p><span class="font-bold text-yellow-400">Date:</span> ${escapeHtml(event.date)}</p>` : ''}
+            ${event.time ? `<p><span class="font-bold text-yellow-400">Time:</span> ${escapeHtml(event.time)}</p>` : ''}
+            ${event.location ? `<p><span class="font-bold text-yellow-400">Location:</span> ${escapeHtml(event.location)}</p>` : ''}
+          </div>
+
+          ${event.description ? `<p class="mt-6 leading-7 text-zinc-300">${escapeHtml(event.description)}</p>` : ''}
+
+          <div class="mt-8">
+            <div class="mb-2 flex justify-between text-sm font-bold text-zinc-300">
+              <span>Current Player Count</span>
+              <span>${playerCount} / ${maxPlayers}</span>
+            </div>
+            <div class="h-4 overflow-hidden rounded-full bg-zinc-800 ring-1 ring-yellow-500/20">
+              <div class="h-full rounded-full bg-yellow-500" style="width: ${playerPercent}%"></div>
+            </div>
+          </div>
+
+          ${rsvpUrl
+            ? `<a href="${escapeHtml(rsvpUrl)}" target="_blank" rel="noopener noreferrer" class="mt-8 block rounded-md bg-red-800 px-6 py-4 text-center text-sm font-black uppercase tracking-wider text-white no-underline hover:bg-red-700">RSVP / Reserve Your Seat</a>`
+            : `<p class="mt-8 rounded-md border border-zinc-700 bg-zinc-950 px-6 py-4 text-center font-bold text-zinc-300">RSVP link coming soon.</p>`
+          }
+        `;
+      }
+
+      function renderEventCards(events) {
+        if (!eventsGrid) return;
+
+        if (!events.length) {
+          eventsGrid.innerHTML = '<p class="text-zinc-300">No upcoming events are currently listed.</p>';
+          return;
+        }
+
+        eventsGrid.innerHTML = events.map((event) => {
+          const count = Number(event.player_count ?? 0);
+          const max = Number(event.max_players ?? 0);
+          const percent = getPlayerPercent(event);
+          const rsvpUrl = String(event.rsvp_url ?? '').trim();
+
+          return `
+            <article class="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 shadow-lg shadow-black/30">
+              <img src="${escapeHtml(getEventImage(event))}" alt="" class="h-48 w-full object-cover" />
+              <div class="p-6">
+                <div class="mb-5 flex items-center justify-between gap-4">
+                  ${event.status ? `<span class="rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-yellow-300">${escapeHtml(event.status)}</span>` : ''}
+                  ${isTrue(event.featured) ? `<span class="rounded-full bg-red-800/40 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-100">Featured</span>` : ''}
+                </div>
+
+                <h3 class="text-2xl font-black text-white">${escapeHtml(event.title)}</h3>
+
+                <div class="mt-4 space-y-2 text-sm text-zinc-300">
+                  ${event.date ? `<p>${escapeHtml(event.date)}</p>` : ''}
+                  ${event.time ? `<p>${escapeHtml(event.time)}</p>` : ''}
+                  ${event.location ? `<p class="text-zinc-400">${escapeHtml(event.location)}</p>` : ''}
+                </div>
+
+                ${event.description ? `<p class="mt-5 line-clamp-4 leading-7 text-zinc-400">${escapeHtml(event.description)}</p>` : ''}
+
+                <div class="mt-6">
+                  <div class="mb-2 flex justify-between text-xs font-bold uppercase tracking-wider text-zinc-400">
+                    <span>Players</span>
+                    <span>${count} / ${max}</span>
+                  </div>
+                  <div class="h-2.5 overflow-hidden rounded-full bg-zinc-800">
+                    <div class="h-full rounded-full bg-yellow-500" style="width: ${percent}%"></div>
+                  </div>
+                </div>
+
+                ${rsvpUrl
+                  ? `<a href="${escapeHtml(rsvpUrl)}" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex font-black uppercase tracking-wider text-yellow-400 no-underline hover:text-yellow-300">RSVP →</a>`
+                  : `<p class="mt-6 font-bold text-zinc-500">RSVP coming soon</p>`
+                }
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      async function loadEvents() {
+        try {
+          const response = await fetch('/api/events.json', { cache: 'no-store' });
+          if (!response.ok) throw new Error(`Failed to load events: ${response.status}`);
+
+          const allEvents = await response.json();
+          const visibleEvents = allEvents.filter(isVisible);
+          const sortedEvents = sortEvents(visibleEvents);
+          const nextEvent = sortedEvents.find((event) => isTrue(event.featured)) ?? sortedEvents[0];
+
+          renderFeaturedEvent(nextEvent);
+          renderEventCards(sortedEvents);
+        } catch (error) {
+          console.error(error);
+          if (featuredEvent) featuredEvent.innerHTML = '<p class="text-red-200">Events could not be loaded right now.</p>';
+          if (eventsGrid) eventsGrid.innerHTML = '<p class="text-red-200">Events could not be loaded right now.</p>';
+        }
+      }
+
+      loadEvents();
+    </script>
   </body>
 </html>

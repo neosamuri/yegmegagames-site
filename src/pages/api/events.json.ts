@@ -11,20 +11,18 @@ type EventRow = {
   location?: string;
   description?: string;
   rsvp_url?: string;
-  player_count?: string;
   max_players?: string;
   status?: string;
   featured?: string;
   visible?: string;
   image?: string;
-  rsvpResponseCsv?: string;
+  playerCountApi?: string;
   [key: string]: unknown;
 };
 
-type ResponseRow = {
-  Email?: string;
-  email?: string;
-  [key: string]: unknown;
+type CountApiResponse = {
+  count?: number | string;
+  player_count?: number | string;
 };
 
 function parseCsv<T>(csv: string): T[] {
@@ -41,60 +39,39 @@ function parseCsv<T>(csv: string): T[] {
   return results.data;
 }
 
-function normalizeCsvUrl(url: string): string {
-  const trimmed = String(url ?? '').trim();
+function parseCount(value: unknown): number {
+  const count = Number(value);
 
-  if (!trimmed) {
-    return '';
+  if (!Number.isFinite(count) || count < 0) {
+    return 0;
   }
 
-  // If someone pastes a Google published HTML URL, convert it to CSV.
-  if (trimmed.includes('/pubhtml')) {
-    return trimmed.replace('/pubhtml', '/pub').replace(/([?&])output=[^&]+/, '$1output=csv') +
-      (trimmed.includes('output=') ? '' : '&output=csv');
-  }
-
-  // If someone pastes a Google published URL without output=csv, add it.
-  if (trimmed.includes('/pub?') && !trimmed.includes('output=csv')) {
-    return `${trimmed}&output=csv`;
-  }
-
-  return trimmed;
+  return Math.floor(count);
 }
 
-async function getUniquePlayerCount(rsvpResponseCsv?: string): Promise<number> {
-  const csvUrl = normalizeCsvUrl(String(rsvpResponseCsv ?? ''));
+async function getPlayerCount(playerCountApi?: string): Promise<number> {
+  const url = String(playerCountApi ?? '').trim();
 
-  if (!csvUrl) {
+  if (!url) {
     return 0;
   }
 
   try {
-    const response = await fetch(csvUrl);
+    const response = await fetch(url, {
+      redirect: 'follow',
+    });
 
     if (!response.ok) {
-      console.warn(`RSVP response CSV failed to load: ${response.status}`);
+      console.warn(`Player count API failed: ${response.status}`);
       return 0;
     }
 
-    const csv = await response.text();
-    const rows = parseCsv<ResponseRow>(csv);
+    const text = await response.text();
+    const data = JSON.parse(text) as CountApiResponse;
 
-    const uniqueEmails = new Set<string>();
-
-    for (const row of rows) {
-      const email = String(row.Email ?? row.email ?? '')
-        .trim()
-        .toLowerCase();
-
-      if (email) {
-        uniqueEmails.add(email);
-      }
-    }
-
-    return uniqueEmails.size;
+    return parseCount(data.count ?? data.player_count);
   } catch (error) {
-    console.warn('RSVP response CSV could not be counted:', error);
+    console.error('Player count fetch failed:', error);
     return 0;
   }
 }
@@ -110,22 +87,22 @@ export const GET: APIRoute = async () => {
     const csv = await response.text();
     const events = parseCsv<EventRow>(csv);
 
-    const eventsWithPlayerCounts = await Promise.all(
+    const eventsWithCounts = await Promise.all(
       events.map(async (event) => {
-        const playerCount = await getUniquePlayerCount(event.rsvpResponseCsv);
+        const count = await getPlayerCount(event.playerCountApi);
 
         return {
           ...event,
-          player_count: String(playerCount),
+          player_count: String(count),
         };
       })
     );
 
-    return new Response(JSON.stringify(eventsWithPlayerCounts, null, 2), {
+    return new Response(JSON.stringify(eventsWithCounts, null, 2), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60',
+        'Cache-Control': 'public, max-age=300',
       },
     });
   } catch (error) {
@@ -139,6 +116,7 @@ export const GET: APIRoute = async () => {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
         },
       }
     );

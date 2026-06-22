@@ -1,32 +1,52 @@
 import type { APIRoute } from 'astro';
+import Papa from 'papaparse';
 
 const SHEET_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHPRtqwNjtSJTg_CTgZIdogaYjNfODwXhJdr_5vzCZnv4ASEVw2KvyapsXf8NoqK-lSS7hYC6rtjQ1/pub?gid=0&single=true&output=csv';
 
-function parseCSV(text: string) {
-  const rows = text.trim().split('\n').map((row) =>
-    row.split(',').map((cell) => cell.trim().replace(/^"|"$/g, ''))
-  );
-
-  const headers = rows.shift() ?? [];
-
-  return rows.map((row) =>
-    Object.fromEntries(headers.map((header, index) => [header, row[index] ?? '']))
-  );
-}
-
 export const GET: APIRoute = async () => {
-  const response = await fetch(SHEET_CSV_URL);
-  const csv = await response.text();
+  try {
+    const response = await fetch(SHEET_CSV_URL);
 
-  const events = parseCSV(csv).filter((event: any) => {
-    return event.visible?.toLowerCase() !== 'false';
-  });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch sheet: ${response.status}`);
+    }
 
-  return new Response(JSON.stringify(events), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'public, max-age=60',
-    },
-  });
+    const csv = await response.text();
+
+    const results = Papa.parse(csv, {
+      header: true,
+      skipEmptyLines: true,
+      dynamicTyping: false,
+    });
+
+    if (results.errors.length > 0) {
+      console.error('CSV Parse Errors:', results.errors);
+    }
+
+    const events = results.data;
+
+    return new Response(JSON.stringify(events, null, 2), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=60',
+      },
+    });
+  } catch (error) {
+    console.error('Events API Error:', error);
+
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to load events',
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
 };
+

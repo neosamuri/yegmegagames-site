@@ -55,7 +55,7 @@ import '../styles/global.css';
               <a href="#next-event" class="rounded-md bg-yellow-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 no-underline shadow-lg hover:bg-yellow-400">
                 View Next Event
               </a>
-              <a href="#community" class="rounded-md border border-yellow-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-yellow-300 no-underline hover:bg-yellow-500/10">
+              <a href="https://discord.gg/gpVh2X6sKu" target="_blank" rel="noopener noreferrer" class="rounded-md border border-yellow-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-yellow-300 no-underline hover:bg-yellow-500/10">
                 Join The Community
               </a>
             </div>
@@ -109,17 +109,14 @@ import '../styles/global.css';
       <section id="community" class="bg-zinc-900 px-5 py-16 lg:py-20">
         <div class="mx-auto max-w-7xl rounded-2xl border border-yellow-500/30 bg-zinc-950 p-8 text-center shadow-2xl shadow-black/50">
           <img src="/img/cropped-iconpng.png" alt="" class="mx-auto mb-6 h-16 w-16" />
-          <h2 class="text-4xl font-black text-white sm:text-5xl">Join the YEG Megagames community</h2>
+          <h2 class="text-4xl font-black text-white sm:text-5xl">Join the YEG Megagames Discord</h2>
           <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-zinc-300">
-            Follow upcoming events, meet other players, and get announcements for the next Edmonton megagame.
+            Meet other players, get event announcements, find teams, and stay up to date on upcoming Edmonton megagames.
           </p>
 
           <div class="mt-8 flex flex-wrap justify-center gap-4">
-            <a href="#" class="rounded-md bg-yellow-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 no-underline hover:bg-yellow-400">
-              Discord Link Coming Soon
-            </a>
-            <a href="#" class="rounded-md border border-yellow-500/70 px-6 py-3 text-sm font-black uppercase tracking-wider text-yellow-300 no-underline hover:bg-yellow-500/10">
-              Facebook Link Coming Soon
+            <a href="https://discord.gg/gpVh2X6sKu" target="_blank" rel="noopener noreferrer" class="rounded-md bg-yellow-500 px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 no-underline hover:bg-yellow-400">
+              Join Discord
             </a>
           </div>
         </div>
@@ -194,8 +191,8 @@ import '../styles/global.css';
             ${event.status ? `<span class="rounded-full border border-red-700/60 bg-red-950/50 px-3 py-1 text-xs font-black uppercase tracking-wider text-red-200">${escapeHtml(event.status)}</span>` : ''}
           </div>
 
-          <div class="mb-6 overflow-hidden rounded-xl border border-zinc-700">
-            <img src="${escapeHtml(getEventImage(event))}" alt="" class="h-56 w-full object-cover" />
+          <div class="mb-6 overflow-hidden rounded-xl border border-yellow-500/20 bg-gradient-to-br from-zinc-600 via-zinc-700 to-zinc-900 shadow-lg shadow-yellow-500/10">
+            <img src="${escapeHtml(getEventImage(event))}" alt="" class="h-72 w-full object-contain p-4" />
           </div>
 
           <h2 class="text-4xl font-black leading-tight text-white">${escapeHtml(event.title)}</h2>
@@ -206,7 +203,7 @@ import '../styles/global.css';
             ${event.location ? `<p><span class="font-bold text-yellow-400">Location:</span> ${escapeHtml(event.location)}</p>` : ''}
           </div>
 
-          ${event.description ? `<p class="mt-6 leading-7 text-zinc-300">${escapeHtml(event.description)}</p>` : ''}
+          ${event.description ? `<p class="mt-6 rounded-xl border border-zinc-700/70 bg-zinc-950/50 p-5 leading-8 text-zinc-200">${escapeHtml(event.description)}</p>` : ''}
 
           <div class="mt-8">
             <div class="mb-2 flex justify-between text-sm font-bold text-zinc-300">
@@ -241,7 +238,9 @@ import '../styles/global.css';
 
           return `
             <article class="overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950 shadow-lg shadow-black/30">
-              <img src="${escapeHtml(getEventImage(event))}" alt="" class="h-48 w-full object-cover" />
+              <div class="bg-gradient-to-br from-zinc-600 via-zinc-700 to-zinc-900">
+                <img src="${escapeHtml(getEventImage(event))}" alt="" class="h-48 w-full object-contain p-3" />
+              </div>
               <div class="p-6">
                 <div class="mb-5 flex items-center justify-between gap-4">
                   ${event.status ? `<span class="rounded-full bg-yellow-500/10 px-3 py-1 text-xs font-black uppercase tracking-wider text-yellow-300">${escapeHtml(event.status)}</span>` : ''}

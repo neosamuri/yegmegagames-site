@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import Papa from 'papaparse';
 
+export const prerender = false;
+
 const SHEET_CSV_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTHPRtqwNjtSJTg_CTgZIdogaYjNfODwXhJdr_5vzCZnv4ASEVw2KvyapsXf8NoqK-lSS7hYC6rtjQ1/pub?gid=0&single=true&output=csv';
 
@@ -57,8 +59,19 @@ async function getPlayerCount(playerCountApi?: string): Promise<number> {
   }
 
   try {
-    const response = await fetch(url, {
+    // Prevent Cloudflare, Google Apps Script, or an intermediate cache from
+    // returning an older player count. Apps Script ignores the extra query
+    // parameter, while each request receives a unique URL.
+    const countUrl = new URL(url);
+    countUrl.searchParams.set('_', Date.now().toString());
+
+    const response = await fetch(countUrl.toString(), {
+      cache: 'no-store',
       redirect: 'follow',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, max-age=0',
+        Pragma: 'no-cache',
+      },
     });
 
     if (!response.ok) {
@@ -78,7 +91,17 @@ async function getPlayerCount(playerCountApi?: string): Promise<number> {
 
 export const GET: APIRoute = async () => {
   try {
-    const response = await fetch(SHEET_CSV_URL);
+    // Google Sheets published CSV responses can remain cached after an edit.
+    // Add a unique query value and explicit no-cache headers so every API call
+    // retrieves the latest published sheet data.
+    const sheetUrl = `${SHEET_CSV_URL}&_=${Date.now()}`;
+    const response = await fetch(sheetUrl, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, max-age=0',
+        Pragma: 'no-cache',
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch events sheet: ${response.status}`);

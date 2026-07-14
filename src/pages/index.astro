@@ -277,18 +277,68 @@ import '../styles/global.css';
         }).join('');
       }
 
+      let currentEvents = [];
+
+      function parsePlayerCount(value) {
+        const count = Number(value);
+        return Number.isFinite(count) && count >= 0 ? Math.floor(count) : 0;
+      }
+
+      async function fetchLivePlayerCount(event) {
+        const apiUrl = String(event.playerCountApi ?? '').trim();
+        if (!apiUrl) return parsePlayerCount(event.player_count);
+
+        try {
+          const url = new URL(apiUrl);
+          url.searchParams.set('_refresh', Date.now().toString());
+
+          const response = await fetch(url.toString(), {
+            cache: 'no-store',
+            redirect: 'follow',
+          });
+
+          if (!response.ok) {
+            throw new Error(`Player count request failed: ${response.status}`);
+          }
+
+          const data = await response.json();
+          return parsePlayerCount(data.count ?? data.player_count);
+        } catch (error) {
+          console.warn(`Could not refresh player count for ${event.title ?? 'event'}`, error);
+          return parsePlayerCount(event.player_count);
+        }
+      }
+
+      async function refreshPlayerCounts() {
+        if (!currentEvents.length) return;
+
+        const refreshedEvents = await Promise.all(
+          currentEvents.map(async (event) => ({
+            ...event,
+            player_count: String(await fetchLivePlayerCount(event)),
+          }))
+        );
+
+        currentEvents = refreshedEvents;
+        const nextEvent = currentEvents.find((event) => isTrue(event.featured)) ?? currentEvents[0];
+        renderFeaturedEvent(nextEvent);
+        renderEventCards(currentEvents);
+      }
+
       async function loadEvents() {
         try {
-          const response = await fetch('/api/events.json', { cache: 'no-store' });
+          const response = await fetch(`/api/events.json?_refresh=${Date.now()}`, { cache: 'no-store' });
           if (!response.ok) throw new Error(`Failed to load events: ${response.status}`);
 
           const allEvents = await response.json();
           const visibleEvents = allEvents.filter(isVisible);
-          const sortedEvents = sortEvents(visibleEvents);
-          const nextEvent = sortedEvents.find((event) => isTrue(event.featured)) ?? sortedEvents[0];
+          currentEvents = sortEvents(visibleEvents);
 
+          const nextEvent = currentEvents.find((event) => isTrue(event.featured)) ?? currentEvents[0];
           renderFeaturedEvent(nextEvent);
-          renderEventCards(sortedEvents);
+          renderEventCards(currentEvents);
+
+          await refreshPlayerCounts();
         } catch (error) {
           console.error(error);
           if (featuredEvent) featuredEvent.innerHTML = '<p class="text-red-200">Events could not be loaded right now.</p>';
@@ -297,6 +347,7 @@ import '../styles/global.css';
       }
 
       loadEvents();
+      window.setInterval(refreshPlayerCounts, 60_000);
     </script>
   </body>
 </html>
